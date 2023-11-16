@@ -1,3 +1,6 @@
+// PINOUT ESP32 WeMoS LOLIN32 LITE
+// https://forum.arduino.ru/uploads/default/original/1X/5e312ebaff8027632af71eff813c611c9699c0e5.jpeg
+
 // SENSOR DE TEMPERATURA E UMIDADE DHT11 + FIREBASE
 
 #include <Arduino.h>
@@ -6,6 +9,7 @@
 #include <DHT.h>
 
 #define DHTPIN 13
+#define PINLED 2
 
 // CONFIGURAÇÃO DHT:
 #define DHTTYPE DHT11
@@ -38,6 +42,8 @@ unsigned long sendDataPrevMillis = 0;
 int count = 0;
 bool signupOK = false;
 
+int ledOnLine = 0;
+
 void dhtSensor()
 {
     // limpa as variáveis:
@@ -60,6 +66,10 @@ void dhtSensor()
     Serial.println(tempAr);
     Serial.print("Umidade do Ar: ");
     Serial.println(umidade);
+}
+
+void piscaLed()
+{
 }
 
 void setup()
@@ -113,25 +123,33 @@ void loop()
 
         if (Firebase.RTDB.setFloat(&fbdo, "ESP32/TEMP", tempAr))
         {
-            Serial.println("PASSED");
-            Serial.println("Pasta: " + fbdo.dataPath());
-            Serial.println("tipo: " + fbdo.dataType());
+            Serial.print("PASSED");
+            Serial.print(" Pasta:" + fbdo.dataPath());
+            Serial.println(" tipo:" + fbdo.dataType());
         }
         else
         {
-            Serial.println("Falha: " + fbdo.errorReason());
+            Serial.println("Falha:" + fbdo.errorReason());
         }
 
         // Write an Float number on the database path test/float
         if (Firebase.RTDB.setFloat(&fbdo, "ESP32/UMI", umidade))
         {
-            Serial.println("PASSED");
-            Serial.println("Pasta: " + fbdo.dataPath());
-            Serial.println("tipo: " + fbdo.dataType());
+            Serial.print("PASSED");
+            Serial.print(" Pasta:" + fbdo.dataPath());
+            Serial.println(" tipo:" + fbdo.dataType());
         }
         else
         {
-            Serial.println("Falha: " + fbdo.errorReason());
+            Serial.println("Falha:" + fbdo.errorReason());
         }
+        Firebase.RTDB.setTimestamp(&fbdo, "/ESP32/DATE_UPDATE");
+        Serial.println("tempo:" + fbdo.dataPath());
+
+        // ledOnLine = Firebase.RTDB.getInt(&fbdo, "/ESP32/LedOnLine");
+
+        Serial.println("Led:" + ledOnLine);
+
+        digitalWrite(PINLED, ledOnLine);
     }
 }
